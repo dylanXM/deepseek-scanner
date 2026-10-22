@@ -1,0 +1,49 @@
+name: "DeepSeek Exposure Scan"
+description: "Scan a repository for DeepSeek exposure surface (API endpoints, SDKs, model ids, dependencies, container pulls, model artifacts) and write an evidence report."
+author: "Dylan XM"
+branding:
+  icon: "shield"
+  color: "gray-dark"
+
+# Composite (not Docker) on purpose: the scanner is a zero-dependency
+# Python package, so there is no image to build or pull; CI stays fast,
+# and consumers pin behavior with the action ref itself (e.g. @v0.1.0).
+inputs:
+  path:
+    description: "Directory to scan"
+    required: false
+    default: "."
+  format:
+    description: "Report format: md or json"
+    required: false
+    default: "md"
+  out:
+    description: "Report file to write"
+    required: false
+    default: "deepseek-exposure-report.md"
+  fail-on:
+    description: "Fail the job when a finding is at or above this severity: critical, high, medium, low, or none"
+    required: false
+    default: "none"
+  python-version:
+    description: "Python version to run the scanner with"
+    required: false
+    default: "3.12"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+    - name: Install deepseek-exposure-scan
+      shell: bash
+      run: pip install "${{ github.action_path }}"
+    - name: Run scan
+      shell: bash
+      run: >-
+        deepseek-scan scan "${{ inputs.path }}"
+        --format "${{ inputs.format }}"
+        --out "${{ inputs.out }}"
+        --fail-on "${{ inputs.fail-on }}"

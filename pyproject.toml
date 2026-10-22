@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "deepseek-exposure-scan"
+version = "0.1.0"
+description = "Scan a codebase for DeepSeek exposure surface - hosted API endpoints, SDKs, model ids, dependencies, container pulls, local model artifacts - and generate an evidence report."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "Dylan XM" },
+]
+keywords = ["deepseek", "ai-supply-chain", "security", "scanner", "llm", "fascsa", "ai-bom", "devsecops"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Security",
+    "Topic :: Software Development :: Quality Assurance",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+]
+
+[project.scripts]
+deepseek-scan = "deepseek_scan.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/dylanXM/deepseek-scanner"
+Repository = "https://github.com/dylanXM/deepseek-scanner"
+Issues = "https://github.com/dylanXM/deepseek-scanner/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+deepseek_scan = ["rules/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+# fixtures are intentionally dirty sample projects, not real code
+extend-exclude = ["tests/fixtures"]

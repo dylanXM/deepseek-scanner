@@ -1,0 +1,7 @@
+services:
+  app:
+    build: .
+    environment:
+      - DEEPSEEK_API_KEY=sk-fakeexamplekey123456
+  models:
+    image: registry.example.invalid/deepseek-r1:latest

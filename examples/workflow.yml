@@ -1,0 +1,29 @@
+# Example: run DeepSeek Exposure Scan in your own CI.
+# Copy to .github/workflows/deepseek-scan.yml in your repository.
+name: DeepSeek Exposure Scan
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan this repository
+        uses: dylanXM/deepseek-scanner@v0.1.0
+        with:
+          path: "."
+          format: "md"
+          out: "deepseek-exposure-report.md"
+          # Fail CI when critical/high indicators are present:
+          fail-on: "high"
+
+      - name: Upload evidence report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deepseek-exposure-report
+          path: deepseek-exposure-report.md
