@@ -67,6 +67,11 @@ jobs:
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          # Lets a re-run of this workflow for the same tag succeed when the
+          # files are already on PyPI, so a downstream create-release fix is
+          # not blocked by a duplicate-upload failure.
+          skip-existing: true
 
   create-release:
     needs: [build, publish]
@@ -75,6 +80,8 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v4
+
       - name: Download dist artifacts
         uses: actions/download-artifact@v4
         with:
@@ -92,4 +99,4 @@ jobs:
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create ${{ github.ref_name }} dist/* --title "${{ github.ref_name }}" --notes-file /tmp/release-notes.md
+        run: gh release create ${{ github.ref_name }} dist/* --repo ${{ github.repository }} --title "${{ github.ref_name }}" --notes-file /tmp/release-notes.md
