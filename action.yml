@@ -7,7 +7,7 @@ branding:
 
 # Composite (not Docker) on purpose: the scanner is a zero-dependency
 # Python package, so there is no image to build or pull; CI stays fast,
-# and consumers pin behavior with the action ref itself (e.g. @v0.1.0).
+# and consumers pin behavior with the action ref itself (e.g. @v0.1.1).
 inputs:
   path:
     description: "Directory to scan"

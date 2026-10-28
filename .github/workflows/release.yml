@@ -1,0 +1,95 @@
+name: Release
+
+# Builds the sdist + wheel on every v* tag push, validates them with
+# `twine check --strict`, uploads them as a workflow artifact, and publishes
+# to PyPI via trusted publishing (OIDC, no stored token). The PyPI trusted
+# publisher for this repo is registered (pending publisher) as: project
+# name `deepseek-scanner`, owner dylanXM, repository
+# dylanXM/deepseek-scanner, workflow `release.yml`, with NO environment
+# restriction — so the publish job deliberately declares no `environment:`,
+# and the distribution name in pyproject.toml must stay `deepseek-scanner`
+# to match that registration.
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build tooling
+        run: pip install build twine
+
+      - name: Build sdist and wheel
+        run: python -m build
+
+      - name: Validate package metadata
+        run: python -m twine check --strict dist/*
+
+      - name: Smoke-test the wheel
+        run: |
+          pip install dist/*.whl
+          deepseek-scan scan tests/fixtures/negative --fail-on high
+          deepseek-scan scan tests/fixtures/positive --format json --out /tmp/r.json
+          python -c "import json; d=json.load(open('/tmp/r.json')); assert d['summary']['total_findings'] >= 10, d['summary']"
+
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ github.ref_name }}
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Download dist artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-${{ github.ref_name }}
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+  create-release:
+    needs: [build, publish]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    steps:
+      - name: Download dist artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-${{ github.ref_name }}
+          path: dist/
+
+      - name: Write release notes
+        run: |
+          cat > /tmp/release-notes.md <<'EOF'
+          One command scans a codebase for DeepSeek components — hosted API endpoints, SDKs, model identifiers, dependencies, container pulls, local model files — and writes an evidence report with file:line locations.
+          Install: `pip install deepseek-scanner` (Python 3.10+, zero third-party dependencies).
+          Detection limits: findings are evidence that the listed indicators are present; a report with no findings means only that none of the indicators in the current rule set were found in the scanned tree. This is an evidence-collection aid, not a legal determination.
+          EOF
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create ${{ github.ref_name }} dist/* --title "${{ github.ref_name }}" --notes-file /tmp/release-notes.md

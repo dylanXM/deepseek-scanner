@@ -6,4 +6,4 @@ local model artifacts) and produces an evidence report. The tool
 collects evidence only; it does not determine anyone's legal status.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"

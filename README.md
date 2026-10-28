@@ -37,7 +37,13 @@ Every finding carries the rule id, severity, `file:line` location and the matche
 
 ## Install
 
-From GitHub:
+From PyPI:
+
+```bash
+pip install deepseek-scanner
+```
+
+Or from GitHub:
 
 ```bash
 pip install git+https://github.com/dylanXM/deepseek-scanner.git
@@ -113,7 +119,7 @@ The JSON report uses an AI-BOM-style shape (component name / type / vendor, evid
 ## GitHub Action
 
 ```yaml
-- uses: dylanXM/deepseek-scanner@v0.1.0
+- uses: dylanXM/deepseek-scanner@v0.1.1
   with:
     path: "."
     fail-on: "high"   # turn the scan into a CI gate

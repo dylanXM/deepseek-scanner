@@ -3,8 +3,8 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "deepseek-exposure-scan"
-version = "0.1.0"
+name = "deepseek-scanner"
+version = "0.1.1"
 description = "Scan a codebase for DeepSeek exposure surface - hosted API endpoints, SDKs, model ids, dependencies, container pulls, local model artifacts - and generate an evidence report."
 readme = "README.md"
 requires-python = ">=3.10"
